@@ -1,0 +1,189 @@
+﻿@page "/"
+@using FinalProject.Shared
+@using Microsoft.Extensions.Logging
+@inject HttpClient Client
+@implements IDisposable
+@inject NavigationManager NavigationManager
+@* @inject Microsoft.AspNetCore.Blazor.Services.IUriHelper uriHelper *@
+@inject IJSRuntime JSRuntime
+@inject ILogger<Navigate> Logger
+
+<style> 
+    body{
+        background-color:rgb(180, 150, 200);
+        }
+    </style>
+
+<h1 style="color:darkslateblue;">Hello&#128400; Welcome to Online Shop...</h1>
+
+<h2  style="font-family:Indie Flower, serif;"> !! User information !!</h2>
+<br>
+<h3>Please answer the following questions!</h3>
+<EditForm Model="@info" OnValidSubmit="AddData" OnInvalidSubmit="ErrorMethod">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <label>What is your name:</label><br>
+    <InputText @bind-Value="info.Name" /><br>
+
+    @* <label>Email:</label><br>
+    <InputText @bind-Value="info.Email" /><br>
+        <label>City:</label><br>
+    <InputText @bind-Value="info.City" /><br> *@
+        <label>What is your address:</label><br>
+    <InputText @bind-Value="info.Address" /><br>
+        @* <label>PostalCode:</label><br>
+    <InputNumber @bind-Value="info.PostalCode" /><br> *@
+        <label> What is your phone number:</label><br>
+    <InputText @bind-Value="info.Phone" /><br><br>
+    <button type="submit" style="background-color: lightpink;font-size:20px;">Submit</button>
+</EditForm>
+    <br><br><br>
+
+@if (@info.Name != null)
+{
+    <h3>Hello dear @info.Name!</h3>
+}
+<br><br><br>
+
+<table class="table">
+        <thead>
+            <tr>
+                <th>Picture</th>
+                <th>Name</th>
+                <th>Id</th>
+                <th>Count</th>
+                <th>Color</th>
+                <th>Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Clothes != null)
+            {
+                foreach(var clothe in Clothes)
+                {
+                    myvalue = clothe.Id;
+                    <tr>
+                        <td><img src=@clothe.Image_Src alt="Image" width="200px"></td>
+                        @* <td><img src=@clothe.Image_Src alt="Image" style="width:5%;height:5%;"/></td> *@
+                        <td>@clothe.Name</td>
+                        <td>@clothe.Id</td>
+                        <td>@clothe.Count</td>
+                        <td>@clothe.Color</td>
+                        <td>@clothe.price</td>
+                        
+                        <td><button @onclick="@((arg) => Remove(clothe.Id))" style="display: block; background-color: red ;margin-bottom: 15px;margin-top:10px " class="btn btn-primary">delete</button></td>
+                        <td><button @onclick="@((arg) => Update(clothe))" style="display: block;margin-bottom: 15px;margin-top:10px" class="btn btn-primary">Buy and add to cart</button></td>
+                    </tr>
+                }
+            }   
+        </tbody>
+    </table>
+<br><br>
+<h3 style="color:green;">If you want to add new product to our shop, please click here &#128071; </h3>
+<button @onclick="NavigateToAddComponent" style="display: block; background-color: green; margin-bottom: 15px;margin-top:10px" class="btn btn-primary">Add new clothe &#10004;</button>
+
+
+@* <button @onclick="NavigateToCartComponent" style="display: block; background-color: green; margin-bottom: 15px;margin-top:10px" class="btn btn-primary">View your cart &#10004;</button> *@
+<br><br>
+
+<h3 style="color:darkslateblue;">These are the products you bought: </h3>
+@foreach (var c in Cartclothes )
+{
+    <h3>Name: @c.Name => whit Id: @c.Id => with price: @c.price  </h3>
+}
+
+<h3 style="color:darkslateblue;">The final amount you have to pay is equal to:</h3>
+<h3> @FinalPrice</h3>
+
+@code 
+{
+    private Information info = new Information();
+        private void AddData(){
+        @* info.Date = DateTime.Now; *@
+        info = new Information();
+    }
+        private string error = "";
+        private void ErrorMethod(){
+        error = "invalid input";
+        }
+
+        public int FinalPrice;
+        public List<Clothe> Cartclothes = new List<Clothe>();
+        private Clothe add_clothe = new Clothe();
+        List<Clothe> Clothes {get; set;}
+            string make_item;
+
+        [Parameter]
+        public int myvalue{ get; set; }
+        protected override async Task OnInitializedAsync()
+        {
+            var URL =@"https://d99521226.herokuapp.com/api/Clothe/GetAllClothesFromDb";
+            @* var URL =@"http://localhost:5001/api/Clothe/GetAllClothesFromDb"; *@
+            Clothes = await Client.GetFromJsonAsync<List<Clothe>>(URL);
+            NavigationManager.LocationChanged += HandleLocationChanged;
+        }
+
+        public async Task Remove(int id)
+        {
+            var URL =@"https://d99521226.herokuapp.com/api/Clothe/DeleteClotheFromDb/"+ id.ToString();
+            @* var URL =@"http://localhost:5001/api/Clothe/DeleteClotheFromDb/"+ id.ToString(); *@
+            await Client.DeleteAsync(URL);
+            await OnInitializedAsync();
+        }
+
+        @* public async Task Add(int price, string name, int id, string color, string image_src)
+        { *@
+            @* var URL =@"https://d99521226.herokuapp.com/api/Clothe/addNewClotheToDb"; *@
+            @* var URL =@"http://localhost:5001/api/Clothe/addNewClotheToDb"+price.ToString()+name+id.ToString()+color+image_src; 
+            await Client.PutAsJsonAsync(URL, make_item);
+            await OnInitializedAsync(); *@
+        @* } *@
+
+
+        @* public async Task Add(Clothe new_clothe)
+        { *@
+            @* var URL =@"https://d99521226.herokuapp.com/api/Clothe/addNewClotheToDb"; *@
+            @* var URL =@"http://localhost:5001/api/Clothe/addNewClotheToDb"; 
+            await Client.PutAsJsonAsync(URL, make_item);
+            await OnInitializedAsync();
+        } *@
+
+        public async Task Update(Clothe clothe2)
+        {
+            @* var URL =@"https://d99521226.herokuapp.com/api/Clothe/addNewClotheToDb"; *@
+            var URL =@"https://d99521226.herokuapp.com/api/Clothe/updateClotheFromDb"; 
+            @* var URL =@"http://localhost:5001/api/Clothe/updateClotheFromDb";  *@
+            await Client.PutAsJsonAsync(URL, clothe2);
+            Cartclothes.Add(clothe2);
+            
+            FinalPrice += clothe2.price;
+            await OnInitializedAsync();
+        }
+
+
+        private void NavigateToCounterComponent()
+        {
+            NavigationManager.NavigateTo($"navigate/{myvalue}");
+            @* uriHelper.NavigateTo($"/navigatetopage/{myvalue}"); *@
+        }
+
+        private void NavigateToAddComponent()
+        {
+            NavigationManager.NavigateTo("addNew");
+        }
+
+
+        private void HandleLocationChanged(object sender, LocationChangedEventArgs e)
+        {
+            Logger.LogInformation("URL of new location: {Location}", e.Location);
+        }
+
+        public void Dispose()
+        {
+            
+            NavigationManager.LocationChanged -= HandleLocationChanged;
+        }
+
+
+
+}

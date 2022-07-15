@@ -1,0 +1,53 @@
+@page "/addNew"
+@using FinalProject.Shared
+@* @using Microsoft.JSInterop *@
+@inject HttpClient Client
+@* @inject JSRuntime Js *@
+@* @inject Microsoft.JSInterop.JSRuntime Js *@
+
+<style>
+body {
+  background-image: url('/images/5.jpg');
+  @* background-repeat: no-repeat; *@
+}
+</style>
+
+<h1  style="font-family:Segoe Print;  "> Please enter new clothing information to be added to our store :) &#128071; </h1>
+
+<EditForm Model="@add_clothe" OnValidSubmit="@((arg) => Add())" OnInvalidSubmit="ErrorMethod">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <label style="font-size:25px;">Name:</label><br>
+    <InputText @bind-Value="add_clothe.Name" /><br>
+        <label style="font-size:25px;">color:</label><br>
+    <InputText @bind-Value="add_clothe.Color" /><br>
+        <label style="font-size:25px;">price:</label><br>
+    <InputNumber @bind-Value="add_clothe.price" /><br>
+        <label style="font-size:25px;">image link:</label><br>
+    <InputText @bind-Value="add_clothe.Image_Src" /><br>
+        <label style="font-size:25px;">Id:</label><br>
+    <InputNumber @bind-Value="add_clothe.Id" /><br>
+    <label style="font-size:25px;">Count:</label><br>
+    <InputNumber @bind-Value="add_clothe.Count" /><br>
+    <button type="submit" style="background-color: mediumvioletred;font-size:30px;">Submit</button>
+</EditForm>
+    <br>
+
+@code {
+
+        private string error = "";
+        private void ErrorMethod(){
+        error = "invalid input";
+        }
+    Clothe add_clothe = new Clothe();
+        public async Task Add()
+        {
+            @* var URL =@"https://d99521226.herokuapp.com/api/Clothe/addNewClotheToDb"; *@
+            var URL =@"https://d99521226.herokuapp.com/api/Clothe/addNewClotheToDb"; 
+            @* var URL =@"http://localhost:5001/api/Clothe/addNewClotheToDb"; *@
+            await Client.PostAsJsonAsync(URL, add_clothe);
+            @* await Js.InvokeVoidAsync("alert", $"Successfully added"); *@
+            add_clothe = new Clothe();
+
+        }
+}
